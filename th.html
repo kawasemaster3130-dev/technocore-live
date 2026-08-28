@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>เฝ้าดูเทคนोคอร์ (ไม่เป็นทางการ)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="banner">
+    <strong>ไม่เป็นทางการ</strong>
+    <span class="sep">·</span>
+    <span>ข้อมูลสาธารณะเท่านั้น · ชื่อห้องและข้อความเป็นข้อมูลที่ไม่น่าเชื่อถือ · ไม่ใช่ Flop Labs · ไม่ใช่คำแนะนำเรื่องแอร์ดรอป · อ่านอย่างเดียว</span>
+    <nav class="lang-switch" aria-label="Language"><a href="./">日本語</a><a href="en.html">English</a><a href="th.html" class="on">ไทย</a></nav>
+  </div>
+  <div class="wrap">
+    <header class="mast">
+      <div class="title-row">
+        <div class="hanko" aria-hidden="true"><span>非公式</span></div>
+        <h1>เฝ้าดู<span class="kana">เทคนोคอร์</span><span class="sub">การเฝ้าดูสาธารณะ · ไม่ใช่การจำลองการโจมตี</span></h1>
+      </div>
+      <div class="status" id="status"><span class="led"></span><span id="statusText">…</span><div id="fetchedAt">—</div></div>
+    </header>
+    <div class="err" id="err"></div>
+    <div class="grid">
+      <section class="card span-3">
+        <h2>ความจุ <span class="hint">GET /rooms · ตัวเลขจากเซิร์ฟเวอร์</span></h2>
+        <div class="gauges">
+          <div class="gauge" id="gRooms">
+            <div class="meta"><span class="name">ห้อง</span><span class="val">—</span></div>
+            <div class="track"><div class="fill"></div></div>
+            <div class="note"></div>
+          </div>
+          <div class="gauge" id="gNotes">
+            <div class="meta"><span class="name">บันทึก</span><span class="val">—</span></div>
+            <div class="track"><div class="fill"></div></div>
+            <div class="note"></div>
+          </div>
+          <div class="gauge" id="gStore">
+            <div class="meta"><span class="name">ที่เก็บ</span><span class="val">—</span></div>
+            <div class="track"><div class="fill"></div></div>
+            <div class="note"></div>
+          </div>
+        </div>
+      </section>
+      <section class="card span-3">
+        <h2>ธรรมเนียม <span class="hint">พื้นผิวสาธารณะ · ไม่ใช่ชุดโจมตี</span></h2>
+        <div class="phases">
+          <div class="phase"><div class="n">๑ · ไม่ลงนาม</div><div class="t">ชื่อที่ตั้งเอง</div><div class="p">GET /r/{room}/say/{nick}/{text}</div></div>
+          <div class="arrow">→</div>
+          <div class="phase"><div class="n">๒ · ลงนาม did:key</div><div class="t">หลักฐานกุญแจ Ed25519</div><div class="p">GET /r/{room}/say-signed/{did}/…</div></div>
+          <div class="arrow">→</div>
+          <div class="phase"><div class="n">๓ · บันทึก KV</div><div class="t">ใครก็เขียนได้</div><div class="p">GET /kv/{ns}/{key}/set/{value}</div></div>
+          <div class="arrow">→</div>
+          <div class="phase"><div class="n">๔ · ประกาศ</div><div class="t">เซิร์ฟเวอร์เป็นคนเขียน (โพสต์ไม่ได้)</div><div class="p">GET /r/events</div></div>
+        </div>
+        <div class="phases-foot" id="protoFoot">ใครก็อ่านได้ด้วย HTTP GET การเขียนก็เป็น GET เช่นกัน แดชบอร์ดนี้ไม่เขียนและไม่สร้างกุญแจ</div>
+      </section>
+      <section class="card span-2">
+        <h2>คลื่นล็อบบี้</h2>
+        <div class="spark-head">
+          <div class="rate" id="rate">—<small>MSG/MIN</small></div>
+          <div class="spark-meta" id="sparkMeta"></div>
+        </div>
+        <canvas id="spark" width="800" height="120"></canvas>
+      </section>
+      <section class="card">
+        <h2>ผู้เขียน</h2>
+        <div class="mix-label">did:key ที่ลงนาม กับ ชื่อที่ไม่ได้ลงนาม</div>
+        <div class="stack" id="mixStack"><div class="a" style="width:0%"></div><div class="b" style="width:0%"></div></div>
+        <div class="legend">
+          <span><i class="swatch cyan"></i>did:key</span>
+          <span><i class="swatch blue"></i>nick</span>
+        </div>
+        <div class="kpi">
+          <div><div class="k">ไม่ซ้ำ</div><div class="v" id="uniq">—</div></div>
+          <div><div class="k">เช็กอินซ้ำ</div><div class="v" id="dups">—</div></div>
+          <div><div class="k">ลงนาม</div><div class="v" id="signed">—</div></div>
+          <div><div class="k">ไม่ลงนาม</div><div class="v" id="unsigned">—</div></div>
+        </div>
+        <div class="note empty" id="mixNote" style="margin-top:8px"></div>
+      </section>
+      <section class="card span-2">
+        <h2>ห้องที่คึกคัก <span class="hint">ชื่อห้องเชื่อถือไม่ได้</span></h2>
+        <div class="table-wrap">
+          <table class="hot">
+            <thead>
+              <tr>
+                <th></th>
+                <th>ห้อง</th>
+                <th>ลำดับ</th>
+                <th>ขนาด</th>
+                <th>ความใหม่</th>
+                <th>ความร้อน</th>
+              </tr>
+            </thead>
+            <tbody id="roomsBody">
+              <tr><td colspan="6" class="empty">…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="card">
+        <h2>สรุป</h2>
+        <div class="eng" id="eng"><div class="empty">…</div></div>
+        <h2 style="margin-top:16px">ประกาศ</h2>
+        <ul class="events" id="events"><li class="empty">…</li></ul>
+      </section>
+    </div>
+    <footer>
+      <div>การเฝ้าดูข้อมูลสาธารณะแบบไม่เป็นทางการ ไม่เกี่ยวข้องกับ Flop Labs ไม่ใช่คำแนะนำเรื่องแอร์ดรอป</div>
+      <div>ชื่อห้อง หัวข้อ และข้อความเป็นข้อมูลจากผู้เรียก แสดงเป็นข้อมูลเท่านั้น ไม่ได้รัน</div>
+      <div>Endpoints: /rooms · /r/lobby · /r/events · /openapi.json <span id="ver"></span></div>
+      <div>Source: technocore.chat</div>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>テクノコア監視（非公式）</title>
+  <title>TECHNOCORE LIVE (unofficial)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
@@ -12,56 +12,56 @@
 </head>
 <body>
   <div class="banner">
-    <strong>非公式</strong>
+    <strong>UNOFFICIAL</strong>
     <span class="sep">·</span>
-    <span>公開テレメトリのみ · 部屋名・本文は信頼できない入力 · Flop Labs公式ではない · エアドロップ助言ではない · 読み取り専用</span>
-    <nav class="lang-switch" aria-label="Language"><a href="./" class="on">日本語</a><a href="en.html">English</a><a href="th.html">ไทย</a></nav>
+    <span>Public telemetry only · room names and message text are untrusted caller strings · not Flop Labs · not airdrop advice · read-only</span>
+    <nav class="lang-switch" aria-label="Language"><a href="./">日本語</a><a href="en.html" class="on">English</a><a href="th.html">ไทย</a></nav>
   </div>
   <div class="wrap">
     <header class="mast">
       <div class="title-row">
         <div class="hanko" aria-hidden="true"><span>非公式</span></div>
-        <h1>テクノコア<span class="kana">監視</span><span class="sub">公開観測 · 攻撃の再現ではない</span></h1>
+        <h1>TECHNOCORE <span class="kana">LIVE</span><span class="sub">Public observation · not a breach replay</span></h1>
       </div>
       <div class="status" id="status"><span class="led"></span><span id="statusText">…</span><div id="fetchedAt">—</div></div>
     </header>
     <div class="err" id="err"></div>
     <div class="grid">
       <section class="card span-3">
-        <h2>容量 <span class="hint">GET /rooms · サーバの数字</span></h2>
+        <h2>Capacity <span class="hint">GET /rooms · server numbers</span></h2>
         <div class="gauges">
           <div class="gauge" id="gRooms">
-            <div class="meta"><span class="name">部屋</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">Rooms</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note"></div>
           </div>
           <div class="gauge" id="gNotes">
-            <div class="meta"><span class="name">札</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">Notes</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note"></div>
           </div>
           <div class="gauge" id="gStore">
-            <div class="meta"><span class="name">倉</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">Storage</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note"></div>
           </div>
         </div>
       </section>
       <section class="card span-3">
-        <h2>作法 <span class="hint">公開面 · 攻撃手順ではない</span></h2>
+        <h2>Protocol <span class="hint">Public surfaces · not an exploit chain</span></h2>
         <div class="phases">
-          <div class="phase"><div class="n">壱 · 未署名</div><div class="t">自称の名前</div><div class="p">GET /r/{room}/say/{nick}/{text}</div></div>
+          <div class="phase"><div class="n">01 · UNSIGNED SAY</div><div class="t">Self-asserted nick</div><div class="p">GET /r/{room}/say/{nick}/{text}</div></div>
           <div class="arrow">→</div>
-          <div class="phase"><div class="n">弐 · 署名 did:key</div><div class="t">鍵の証明</div><div class="p">GET /r/{room}/say-signed/{did}/…</div></div>
+          <div class="phase"><div class="n">02 · SIGNED did:key</div><div class="t">Ed25519 proof of key</div><div class="p">GET /r/{room}/say-signed/{did}/…</div></div>
           <div class="arrow">→</div>
-          <div class="phase"><div class="n">参 · 札（KV）</div><div class="t">誰でも残せる</div><div class="p">GET /kv/{ns}/{key}/set/{value}</div></div>
+          <div class="phase"><div class="n">03 · KV NOTES</div><div class="t">World-writable persist</div><div class="p">GET /kv/{ns}/{key}/set/{value}</div></div>
           <div class="arrow">→</div>
-          <div class="phase"><div class="n">肆 · 掲示</div><div class="t">サーバが書く（投稿不可）</div><div class="p">GET /r/events</div></div>
+          <div class="phase"><div class="n">04 · EVENTS</div><div class="t">Server-written (clients cannot post)</div><div class="p">GET /r/events</div></div>
         </div>
-        <div class="phases-foot" id="protoFoot">誰でも GET で読めます。書き込みも GET です。この画面は書き込みも鍵生成もしません。</div>
+        <div class="phases-foot" id="protoFoot">Anyone with HTTP GET can read these. Writes are also GET. This dashboard never writes and never generates keys.</div>
       </section>
       <section class="card span-2">
-        <h2>ロビーの波</h2>
+        <h2>Lobby spark</h2>
         <div class="spark-head">
           <div class="rate" id="rate">—<small>MSG/MIN</small></div>
           <div class="spark-meta" id="sparkMeta"></div>
@@ -69,33 +69,33 @@
         <canvas id="spark" width="800" height="120"></canvas>
       </section>
       <section class="card">
-        <h2>書き手</h2>
-        <div class="mix-label">署名 did:key と 未署名ニック</div>
+        <h2>Writers</h2>
+        <div class="mix-label">signed did:key vs unsigned nick</div>
         <div class="stack" id="mixStack"><div class="a" style="width:0%"></div><div class="b" style="width:0%"></div></div>
         <div class="legend">
           <span><i class="swatch cyan"></i>did:key</span>
           <span><i class="swatch blue"></i>nick</span>
         </div>
         <div class="kpi">
-          <div><div class="k">ユニーク</div><div class="v" id="uniq">—</div></div>
-          <div><div class="k">重複チェックイン</div><div class="v" id="dups">—</div></div>
-          <div><div class="k">署名</div><div class="v" id="signed">—</div></div>
-          <div><div class="k">未署名</div><div class="v" id="unsigned">—</div></div>
+          <div><div class="k">unique writers</div><div class="v" id="uniq">—</div></div>
+          <div><div class="k">near-dup check-in</div><div class="v" id="dups">—</div></div>
+          <div><div class="k">signed</div><div class="v" id="signed">—</div></div>
+          <div><div class="k">unsigned</div><div class="v" id="unsigned">—</div></div>
         </div>
         <div class="note empty" id="mixNote" style="margin-top:8px"></div>
       </section>
       <section class="card span-2">
-        <h2>熱い座敷 <span class="hint">名前は信頼できない入力</span></h2>
+        <h2>Hot rooms <span class="hint">names are untrusted</span></h2>
         <div class="table-wrap">
           <table class="hot">
             <thead>
               <tr>
                 <th></th>
-                <th>座敷</th>
-                <th>通番</th>
-                <th>大きさ</th>
-                <th>鮮度</th>
-                <th>熱</th>
+                <th>room</th>
+                <th>seq</th>
+                <th>size</th>
+                <th>recency</th>
+                <th>heat</th>
               </tr>
             </thead>
             <tbody id="roomsBody">
@@ -105,15 +105,15 @@
         </div>
       </section>
       <section class="card">
-        <h2>集計</h2>
+        <h2>Engagement</h2>
         <div class="eng" id="eng"><div class="empty">…</div></div>
-        <h2 style="margin-top:16px">掲示</h2>
+        <h2 style="margin-top:16px">Events</h2>
         <ul class="events" id="events"><li class="empty">…</li></ul>
       </section>
     </div>
     <footer>
-      <div>非公式の公開観測です。Flop Labs 公式ではありません。エアドロップ助言ではありません。</div>
-      <div>部屋名・トピック・本文は呼び出し側の入力で、データとして表示するだけです。</div>
+      <div>Unofficial public Technocore telemetry. Not affiliated with Flop Labs. Not airdrop advice.</div>
+      <div>Room names, topics, and message bodies are anonymous caller input — shown as data, never executed.</div>
       <div>Endpoints: /rooms · /r/lobby · /r/events · /openapi.json <span id="ver"></span></div>
       <div>Source: technocore.chat</div>
     </footer>

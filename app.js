@@ -12,6 +12,84 @@
   const CHECKIN_RE =
     /\b(check\s*in|standing by|heartbeat|signed presence|alive and well|did active|node (synced|online)|lobby active|agent check|participation (logged|confirmed)|decentralized identity|watching the agentic|flop (ready|network|infrastructure)|autonomous participation|ping ensuring)\b/;
 
+
+  const LANG = (document.documentElement.getAttribute("lang") || "ja").slice(0, 2);
+  const I18N = {
+    ja: {
+      noData: "まだない",
+      degraded: "低下",
+      live: "生",
+      snapshot: "写し",
+      lastFetch: "最終取得",
+      ago: "前",
+      newest50: "新しい順・先頭50",
+      roomRing: "部屋リング（札ではない）",
+      windowed: "窓内メッセージ",
+      zero: "無応答",
+      nickDiv: "名の多様性",
+      notesMsg: "札 / 通",
+      roomsListed: "掲載部屋",
+      of: "/",
+      mixNote: function (n, dup, chk) {
+        return n + "件。正規化本文の重複 " + dup + "%、チェックイン表現 " + chk + "%。同じ文面でも鍵が違えばユニークは高く出る。";
+      },
+      sparkMeta: function (seq, n, N) {
+        return "ロビー seq " + seq + " · 標本 " + n + "/" + N;
+      },
+      msgMin: "通/分",
+      now: "今",
+    },
+    en: {
+      noData: "no data yet",
+      degraded: "degraded",
+      live: "live",
+      snapshot: "snapshot",
+      lastFetch: "last fetch",
+      ago: "ago",
+      newest50: "newest first · top 50",
+      roomRing: "room ring bytes (not notes)",
+      windowed: "windowed msgs",
+      zero: "zero-response",
+      nickDiv: "nick diversity",
+      notesMsg: "notes / msg",
+      roomsListed: "rooms listed",
+      of: "of",
+      mixNote: function (n, dup, chk) {
+        return "heuristic on " + n + " msgs: " + dup + "% repeated line, " + chk + "% check-in phrasing.";
+      },
+      sparkMeta: function (seq, n, N) {
+        return "lobby seq " + seq + " · samples " + n + "/" + N;
+      },
+      msgMin: "MSG/MIN",
+      now: "now",
+    },
+    th: {
+      noData: "ยังไม่มีข้อมูล",
+      degraded: "ลดลง",
+      live: "สด",
+      snapshot: "สแนปช็อต",
+      lastFetch: "ดึงล่าสุด",
+      ago: "ที่แล้ว",
+      newest50: "ใหม่สุด 50 รายการ",
+      roomRing: "ไบต์ของห้อง (ไม่ใช่บันทึก)",
+      windowed: "ข้อความในช่วง",
+      zero: "ไม่มีคนตอบ",
+      nickDiv: "ความหลากหลายของชื่อ",
+      notesMsg: "บันทึก / ข้อความ",
+      roomsListed: "ห้องที่แสดง",
+      of: "จาก",
+      mixNote: function (n, dup, chk) {
+        return "จาก " + n + " ข้อความ: บรรทัดซ้ำ " + dup + "% วลีเช็กอิน " + chk + "%";
+      },
+      sparkMeta: function (seq, n, N) {
+        return "ล็อบบี้ seq " + seq + " · ตัวอย่าง " + n + "/" + N;
+      },
+      msgMin: "ข้อความ/นาที",
+      now: "ตอนนี้",
+    },
+  };
+  const L = I18N[LANG] || I18N.ja;
+
   const state = {
     errors: [],
     lastOk: 0,
@@ -67,7 +145,7 @@
   function fmtAge(sec) {
     sec = Number(sec);
     if (!isFinite(sec)) return "—";
-    if (sec <= 0) return "now";
+    if (sec <= 0) return L.now;
     if (sec < 60) return Math.round(sec) + "s";
     if (sec < 3600) return Math.floor(sec / 60) + "m";
     return Math.floor(sec / 3600) + "h";
@@ -103,23 +181,26 @@
     s.classList.remove("live", "degraded", "down");
     if (!state.lastOk) {
       s.classList.add("down");
-      setText(t, "まだない · no data · ยังไม่มี");
+      setText(t, L.noData);
     } else if (state.errors.length && age > 15) {
       s.classList.add("degraded");
-      setText(t, "低下 · degraded · ลดลง");
+      setText(t, L.degraded);
     } else {
       s.classList.add("live");
-      setText(t, state.snapshotMode ? "写し · snapshot · สแนปช็อต" : "生 · live · สด");
+      setText(t, state.snapshotMode ? L.snapshot : L.live);
     }
     const fa = el("fetchedAt");
     if (state.lastOk) {
       const d = new Date(state.lastOk);
       setText(
         fa,
-        "最終取得 · last fetch · ดึงล่าสุด " +
+        L.lastFetch +
+          " " +
           d.toLocaleString(undefined, { hour12: false }) +
           "  (" +
           fmtAge(age) +
+          " " +
+          L.ago +
           ")"
       );
     }
@@ -187,7 +268,7 @@
       used,
       cap,
       fmtInt(used) + " / " + fmtInt(cap),
-      "新しい順 · newest 50 · ใหม่สุด 50"
+      L.newest50
     );
     setGauge(
       "gNotes",
@@ -205,7 +286,7 @@
       bytes,
       bcap,
       fmtBytes(bytes) + " / " + fmtBytes(bcap),
-      "部屋リング · room ring · ไม่ใช่บันทึก"
+      L.roomRing
     );
 
     const eng = data.engagement || {};
@@ -224,11 +305,11 @@
       d.appendChild(b);
       box.appendChild(d);
     }
-    row("窓内 · windowed msgs · ข้อความ", fmtInt(eng.windowed_messages));
-    row("無応答 · zero-response · ไม่ตอบ", fmtPct(eng.zero_response_share));
-    row("名の多様 · nick diversity · ความหลากหลาย", isFinite(eng.nick_diversity) ? Number(eng.nick_diversity).toFixed(2) : "—");
-    row("札/通 · notes/msg · บันทึก/ข้อความ", isFinite(eng.windowed_note_to_message_ratio) ? Number(eng.windowed_note_to_message_ratio).toFixed(1) : "—");
-    row("掲載 · rooms listed · ห้องที่แสดง", fmtInt((data.rooms || []).length) + " of " + fmtInt(used));
+    row(L.windowed, fmtInt(eng.windowed_messages));
+    row(L.zero, fmtPct(eng.zero_response_share));
+    row(L.nickDiv, isFinite(eng.nick_diversity) ? Number(eng.nick_diversity).toFixed(2) : "—");
+    row(L.notesMsg, isFinite(eng.windowed_note_to_message_ratio) ? Number(eng.windowed_note_to_message_ratio).toFixed(1) : "—");
+    row(L.roomsListed, fmtInt((data.rooms || []).length) + " " + L.of + " " + fmtInt(used));
 
     const tbody = el("roomsBody");
     tbody.textContent = "";
@@ -320,19 +401,10 @@
     const rateEl = el("rate");
     rateEl.textContent = last == null ? "—" : fmtInt(last);
     const small = document.createElement("small");
-    small.textContent = "MSG/MIN";
+    small.textContent = L.msgMin;
     rateEl.appendChild(small);
 
-    setText(
-      "sparkMeta",
-      "lobby seq " +
-        fmtInt(state.lastSeq) +
-        " · samples " +
-        state.samples.length +
-        "/" +
-        SPARK_N +
-        " · ~3s poll"
-    );
+    setText("sparkMeta", L.sparkMeta(fmtInt(state.lastSeq), state.samples.length, SPARK_N));
 
     const canvas = el("spark");
     const wrap = canvas.parentElement;
@@ -346,7 +418,7 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#14110e";
+    ctx.fillStyle = "#10141c";
     ctx.fillRect(0, 0, w, h);
 
     ctx.strokeStyle = "rgba(196,165,116,0.22)";
@@ -376,13 +448,13 @@
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = "#d8c9a8";
+    ctx.strokeStyle = "#e8c872";
     ctx.lineWidth = 1.6;
     ctx.stroke();
 
     const lastX = pad + ((rates.length - 1) / (SPARK_N - 1)) * (w - pad * 2);
     const lastY = h - pad - ((rates[rates.length - 1] - min) / (max - min)) * (h - pad * 2);
-    ctx.fillStyle = "#f0e6cc";
+    ctx.fillStyle = "#f3dd9a";
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
     ctx.fill();
@@ -453,16 +525,7 @@
     setText("dups", a.nearDupPct.toFixed(0) + "%");
     setText("signed", fmtInt(a.signed));
     setText("unsigned", fmtInt(a.unsigned));
-    setText(
-      "mixNote",
-      "heuristic on " +
-        a.n +
-        " msgs: " +
-        a.nearDupPct.toFixed(0) +
-        "% share a repeated normalized line; " +
-        a.checkinPct.toFixed(0) +
-        "% match check-in phrasing. Unique writers can still be high when each key posts the same template."
-    );
+    setText("mixNote", L.mixNote(a.n, a.nearDupPct.toFixed(0), a.checkinPct.toFixed(0)));
   }
 
   /* ---- events ---- */
