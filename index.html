@@ -7,7 +7,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="テクノコア監視（非公式）">
   <meta name="twitter:description" content="公開テレメトリ可視化。部屋・流量・署名。JA / EN / TH">
-  <meta name="twitter:image" content="https://kawasemaster3130-dev.github.io/technocore-live/card.gif">
+  <meta name="twitter:image" content="https://kawasemaster3130-dev.github.io/technocore-live/og.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="テクノコア監視（非公式）">
   <meta property="og:description" content="公開テレメトリ可視化。部屋・流量・署名。JA / EN / TH">
@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260828d">
+  <link rel="stylesheet" href="styles.css?v=20260828e">
 </head>
 <body>
   <div class="banner">
@@ -72,12 +72,12 @@
         <div class="phases-foot" id="protoFoot">誰でも GET で読めます。書き込みも GET です。この画面は書き込みも鍵生成もしません。</div>
       </section>
       <section class="card span-2">
-        <h2>ロビーの波</h2>
+        <h2>ロビーの波 <span class="viz-switch" role="tablist"><button type="button" class="on" id="vizFace" data-viz="face">線顔</button><button type="button" id="vizHanko" data-viz="hanko">判子</button></span></h2>
         <div class="spark-head">
           <div class="rate" id="rate">—<small>MSG/MIN</small></div>
           <div class="spark-meta" id="sparkMeta"></div>
         </div>
-        <canvas id="spark" width="800" height="120"></canvas>
+        <canvas id="spark" width="800" height="168"></canvas>
       </section>
       <section class="card">
         <h2>書き手</h2>
@@ -129,6 +129,6 @@
       <div>Source: technocore.chat</div>
     </footer>
   </div>
-  <script src="app.js?v=20260828d"></script>
+  <script src="app.js?v=20260828e"></script>
 </body>
 </html>

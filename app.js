@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const POLL_SEQ_MS = 3000;
+  const POLL_SEQ_MS = 1000;
   const POLL_ROOMS_MS = 20000;
   const POLL_SAMPLE_MS = 32000;
   const POLL_EVENTS_MS = 45000;
@@ -38,6 +38,8 @@
       },
       msgMin: "通/分",
       now: "今",
+      vizFace: "線顔",
+      vizHanko: "判子",
     },
     en: {
       noData: "no data yet",
@@ -62,6 +64,8 @@
       },
       msgMin: "MSG/MIN",
       now: "now",
+      vizFace: "line face",
+      vizHanko: "stamps",
     },
     th: {
       noData: "ยังไม่มีข้อมูล",
@@ -86,6 +90,8 @@
       },
       msgMin: "ข้อความ/นาที",
       now: "ตอนนี้",
+      vizFace: "หน้าเส้น",
+      vizHanko: "ตรา",
     },
   };
   const L = I18N[LANG] || I18N.ja;
@@ -98,6 +104,14 @@
     openapi: null,
     rooms: null,
     mix: null,
+    viz: (function () {
+      try {
+        const v = localStorage.getItem("tc-viz");
+        if (v === "face" || v === "hanko") return v;
+      } catch (e) {}
+      return "face";
+    })(),
+    playHead: 0,
   };
 
   function isLocalHost() {
@@ -391,12 +405,221 @@
     paintSpark();
   }
 
+  function xyFor(rates, i, w, h, pad, min, max) {
+    const x = pad + (i / Math.max(1, SPARK_N - 1)) * (w - pad * 2);
+    const y = h - pad - ((rates[i] - min) / Math.max(1, max - min)) * (h - pad * 2);
+    return { x: x, y: y };
+  }
+
+  function waveMood(rates, seed) {
+    const n = rates.length;
+    const last = rates[n - 1];
+    const prev = n > 1 ? rates[n - 2] : last;
+    const max = Math.max.apply(null, rates);
+    const min = Math.min.apply(null, rates);
+    const span = Math.max(1, max - min);
+    const t = (last - min) / span;
+    const d = (last - prev) / span;
+    let kind = 1;
+    if (t > 0.78 && d > 0.05) kind = 2;
+    else if (d > 0.18) kind = 0;
+    else if (d < -0.18) kind = 3;
+    else if (t < 0.22) kind = 4;
+    else if (Math.abs(d) < 0.04 && t > 0.45) kind = 1;
+    kind = (kind + (Math.abs(seed | 0) % 5)) % 8;
+    return { kind: kind, t: t, d: d, open: 0.22 + t * 0.7 };
+  }
+
+  function drawStampFace(ctx, x, y, s, kind, glow) {
+    const r = s / 2;
+    ctx.save();
+    ctx.translate(x, y);
+    if (glow) {
+      ctx.shadowColor = "rgba(243,221,154,0.85)";
+      ctx.shadowBlur = 14;
+    }
+    ctx.fillStyle = glow ? "#f3dd9a" : "#e8c872";
+    ctx.strokeStyle = "#10141c";
+    ctx.lineWidth = Math.max(1.2, s * 0.08);
+    ctx.beginPath();
+    ctx.rect(-r, -r, s, s);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+    ctx.fillStyle = "#10141c";
+    ctx.strokeStyle = "#10141c";
+    ctx.lineWidth = Math.max(1.4, s * 0.09);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    const eyeY = -r * 0.18;
+    const eyeD = r * 0.28;
+    function eye(ex, k) {
+      if (k === 4) {
+        ctx.beginPath();
+        ctx.moveTo(ex - r * 0.12, eyeY);
+        ctx.lineTo(ex + r * 0.12, eyeY);
+        ctx.stroke();
+      } else if (k === 6 && ex > 0) {
+        ctx.beginPath();
+        ctx.moveTo(ex - r * 0.14, eyeY);
+        ctx.lineTo(ex + r * 0.14, eyeY + r * 0.04);
+        ctx.stroke();
+      } else if (k === 3) {
+        ctx.beginPath();
+        ctx.arc(ex, eyeY + r * 0.02, r * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(ex - r * 0.16, eyeY - r * 0.18);
+        ctx.lineTo(ex + r * 0.1, eyeY - r * 0.06);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(ex, eyeY, r * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    eye(-eyeD, kind);
+    eye(eyeD, kind);
+    ctx.beginPath();
+    const my = r * 0.28;
+    if (kind === 2) {
+      ctx.ellipse(0, my, r * 0.22, r * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 3) {
+      ctx.moveTo(-r * 0.32, my + r * 0.08);
+      ctx.quadraticCurveTo(0, my - r * 0.12, r * 0.32, my + r * 0.08);
+      ctx.stroke();
+    } else if (kind === 4) {
+      ctx.moveTo(-r * 0.22, my);
+      ctx.lineTo(r * 0.22, my);
+      ctx.stroke();
+    } else if (kind === 5) {
+      ctx.moveTo(-r * 0.3, my);
+      ctx.quadraticCurveTo(0, my + r * 0.38, r * 0.3, my);
+      ctx.stroke();
+      ctx.fillStyle = "#b23a3a";
+      ctx.beginPath();
+      ctx.ellipse(r * 0.08, my + r * 0.28, r * 0.1, r * 0.16, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 7) {
+      ctx.moveTo(-r * 0.34, my);
+      ctx.lineTo(r * 0.34, my);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.2, my);
+      ctx.lineTo(-r * 0.12, my + r * 0.16);
+      ctx.lineTo(-r * 0.04, my);
+      ctx.lineTo(r * 0.04, my + r * 0.16);
+      ctx.lineTo(r * 0.12, my);
+      ctx.lineTo(r * 0.2, my + r * 0.16);
+      ctx.stroke();
+    } else if (kind === 1) {
+      ctx.moveTo(-r * 0.12, my);
+      ctx.quadraticCurveTo(r * 0.18, my + r * 0.22, r * 0.36, my - r * 0.02);
+      ctx.stroke();
+    } else {
+      ctx.moveTo(-r * 0.34, my - r * 0.04);
+      ctx.quadraticCurveTo(0, my + r * 0.42, r * 0.34, my - r * 0.04);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawLineFace(ctx, cx, cy, rad, mood) {
+    const k = mood.kind;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.strokeStyle = "#f3dd9a";
+    ctx.fillStyle = "#1a2230";
+    ctx.lineWidth = 2.4;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.shadowColor = "rgba(232,200,114,0.55)";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#e8c872";
+    ctx.fillStyle = "#e8c872";
+    ctx.lineWidth = 2.1;
+    const eyeY = -rad * 0.18;
+    const eyeD = rad * 0.32;
+    function oneEye(ex, wink) {
+      if (wink || k === 4) {
+        ctx.beginPath();
+        ctx.moveTo(ex - rad * 0.14, eyeY);
+        ctx.lineTo(ex + rad * 0.14, eyeY + (k === 3 ? -rad * 0.04 : rad * 0.02));
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(ex, eyeY, rad * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+        if (k === 3) {
+          ctx.beginPath();
+          ctx.moveTo(ex - rad * 0.18, eyeY - rad * 0.22);
+          ctx.lineTo(ex + rad * 0.1, eyeY - rad * 0.08);
+          ctx.stroke();
+        }
+      }
+    }
+    oneEye(-eyeD, false);
+    oneEye(eyeD, k === 6);
+    ctx.beginPath();
+    const my = rad * 0.32;
+    if (k === 2) {
+      ctx.ellipse(0, my, rad * 0.2 * (0.7 + mood.open), rad * 0.24 * (0.7 + mood.open), 0, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (k === 3) {
+      ctx.moveTo(-rad * 0.38, my + rad * 0.1);
+      ctx.quadraticCurveTo(0, my - rad * 0.18, rad * 0.38, my + rad * 0.1);
+      ctx.stroke();
+    } else if (k === 4) {
+      ctx.moveTo(-rad * 0.22, my);
+      ctx.lineTo(rad * 0.22, my);
+      ctx.stroke();
+    } else if (k === 5) {
+      ctx.moveTo(-rad * 0.34, my);
+      ctx.quadraticCurveTo(0, my + rad * 0.42, rad * 0.34, my);
+      ctx.stroke();
+      ctx.fillStyle = "#c45a4a";
+      ctx.beginPath();
+      ctx.ellipse(rad * 0.1, my + rad * 0.3, rad * 0.1, rad * 0.16, 0.25, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (k === 7) {
+      ctx.moveTo(-rad * 0.4, my);
+      ctx.lineTo(rad * 0.4, my);
+      ctx.stroke();
+      ctx.beginPath();
+      for (let i = -2; i <= 2; i++) {
+        ctx.moveTo(i * rad * 0.12, my);
+        ctx.lineTo(i * rad * 0.12, my + rad * 0.16);
+      }
+      ctx.stroke();
+    } else if (k === 1) {
+      ctx.moveTo(-rad * 0.08, my + rad * 0.02);
+      ctx.quadraticCurveTo(rad * 0.22, my + rad * 0.28, rad * 0.42, my - rad * 0.02);
+      ctx.stroke();
+    } else {
+      ctx.moveTo(-rad * 0.4, my - rad * 0.06);
+      ctx.quadraticCurveTo(0, my + rad * 0.5 * mood.open, rad * 0.4, my - rad * 0.06);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function paintSpark() {
-    const rates = state.samples.map(function (s) {
+    const allRates = state.samples.map(function (s) {
       return s.rate;
     }).filter(function (r) {
       return r != null && isFinite(r);
     });
+    let rates = allRates.slice();
+    if (!isLocalHost() && rates.length > 4) {
+      const cut = Math.max(2, (state.playHead % rates.length) + 2);
+      rates = rates.slice(0, cut);
+    }
     const last = rates.length ? rates[rates.length - 1] : null;
     const rateEl = el("rate");
     rateEl.textContent = last == null ? "—" : fmtInt(last);
@@ -406,10 +629,19 @@
 
     setText("sparkMeta", L.sparkMeta(fmtInt(state.lastSeq), state.samples.length, SPARK_N));
 
+    const btnFace = el("vizFace");
+    const btnHanko = el("vizHanko");
+    if (btnFace && btnHanko) {
+      btnFace.classList.toggle("on", state.viz === "face");
+      btnHanko.classList.toggle("on", state.viz === "hanko");
+      btnFace.textContent = L.vizFace;
+      btnHanko.textContent = L.vizHanko;
+    }
+
     const canvas = el("spark");
     const wrap = canvas.parentElement;
     const w = Math.max(200, wrap.clientWidth - 2);
-    const h = 120;
+    const h = 168;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
@@ -440,28 +672,59 @@
 
     const max = Math.max.apply(null, rates.concat([1]));
     const min = 0;
-    const pad = 8;
-    ctx.beginPath();
-    rates.forEach(function (r, i) {
-      const x = pad + (i / (SPARK_N - 1)) * (w - pad * 2);
-      const y = h - pad - ((r - min) / (max - min)) * (h - pad * 2);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = "#e8c872";
-    ctx.lineWidth = 1.6;
-    ctx.stroke();
+    const pad = state.viz === "hanko" ? 22 : 18;
+    const seed = (state.lastSeq || 0) + rates.length;
 
-    const lastX = pad + ((rates.length - 1) / (SPARK_N - 1)) * (w - pad * 2);
-    const lastY = h - pad - ((rates[rates.length - 1] - min) / (max - min)) * (h - pad * 2);
-    ctx.fillStyle = "#f3dd9a";
-    ctx.beginPath();
-    ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
-    ctx.fill();
+    if (state.viz === "hanko") {
+      const n = rates.length;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const p = xyFor(rates, i, w, h, pad, min, max);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = "rgba(232,200,114,0.35)";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      const step = n > 24 ? Math.ceil(n / 18) : 1;
+      for (let i = 0; i < n; i += step) {
+        const p = xyFor(rates, i, w, h, pad, min, max);
+        const lastStamp = i >= n - step;
+        const sz = lastStamp ? 28 : 22;
+        const mood = waveMood(rates.slice(0, i + 1), seed + i);
+        drawStampFace(ctx, p.x, p.y, sz, mood.kind, lastStamp);
+      }
+    } else {
+      const n = rates.length;
+      const lastP = xyFor(rates, n - 1, w, h, pad, min, max);
+      const rad = 20;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const p = xyFor(rates, i, w, h, pad, min, max);
+        if (i === n - 1) {
+          p.x = lastP.x - rad - 2;
+        }
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = "#e8c872";
+      ctx.lineWidth = 2.2;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+      const mood = waveMood(rates, seed);
+      const faceY = Math.min(h - rad - 4, Math.max(rad + 4, lastP.y));
+      drawLineFace(ctx, lastP.x, faceY, rad, mood);
+    }
 
     ctx.fillStyle = "#7a7468";
     ctx.font = "10px ui-monospace, monospace";
     ctx.fillText(fmtInt(max) + "/min", 6, 12);
+  }
+
+  function setViz(mode) {
+    state.viz = mode;
+    try { localStorage.setItem("tc-viz", mode); } catch (e) {}
+    paintSpark();
   }
 
   /* ---- writer mix ---- */
@@ -700,6 +963,16 @@
       );
     }
     window.addEventListener("resize", paintSpark);
+    const vf = el("vizFace");
+    const vh = el("vizHanko");
+    if (vf) vf.addEventListener("click", function () { setViz("face"); });
+    if (vh) vh.addEventListener("click", function () { setViz("hanko"); });
+    setInterval(function () {
+      if (!isLocalHost() && state.samples.length > 2) {
+        state.playHead += 1;
+        paintSpark();
+      }
+    }, 1000);
     setInterval(tickClock, 1000);
     if (isLocalHost()) {
       pollRooms();

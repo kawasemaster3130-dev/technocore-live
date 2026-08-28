@@ -7,7 +7,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="TECHNOCORE LIVE (unofficial)">
   <meta name="twitter:description" content="Public telemetry viz — rooms, traffic, signatures. JA / EN / TH">
-  <meta name="twitter:image" content="https://kawasemaster3130-dev.github.io/technocore-live/card.gif">
+  <meta name="twitter:image" content="https://kawasemaster3130-dev.github.io/technocore-live/og.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="TECHNOCORE LIVE (unofficial)">
   <meta property="og:description" content="Public telemetry viz — rooms, traffic, signatures. JA / EN / TH">
@@ -18,8 +18,8 @@
   <title>TECHNOCORE LIVE (unofficial)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260828d">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Thai:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260828e">
 </head>
 <body>
   <div class="banner">
@@ -31,7 +31,6 @@
   <div class="wrap">
     <header class="mast">
       <div class="title-row">
-        <div class="hanko" aria-hidden="true"><span>非公式</span></div>
         <h1>TECHNOCORE <span class="kana">LIVE</span><span class="sub">Public observation · not a breach replay</span></h1>
       </div>
       <div class="status" id="status"><span class="led"></span><span id="statusText">…</span><div id="fetchedAt">—</div></div>
@@ -72,12 +71,12 @@
         <div class="phases-foot" id="protoFoot">Anyone with HTTP GET can read these. Writes are also GET. This dashboard never writes and never generates keys.</div>
       </section>
       <section class="card span-2">
-        <h2>Lobby spark</h2>
+        <h2>Lobby spark <span class="viz-switch" role="tablist"><button type="button" class="on" id="vizFace" data-viz="face">line face</button><button type="button" id="vizHanko" data-viz="hanko">stamps</button></span></h2>
         <div class="spark-head">
           <div class="rate" id="rate">—<small>MSG/MIN</small></div>
           <div class="spark-meta" id="sparkMeta"></div>
         </div>
-        <canvas id="spark" width="800" height="120"></canvas>
+        <canvas id="spark" width="800" height="168"></canvas>
       </section>
       <section class="card">
         <h2>Writers</h2>
@@ -129,6 +128,6 @@
       <div>Source: technocore.chat</div>
     </footer>
   </div>
-  <script src="app.js?v=20260828d"></script>
+  <script src="app.js?v=20260828e"></script>
 </body>
 </html>
