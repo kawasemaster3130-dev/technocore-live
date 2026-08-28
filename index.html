@@ -1,29 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>TECHNOCORE LIVE — public telemetry (unofficial)</title>
+  <title>テクノコア監視 — TECHNOCORE LIVE (unofficial)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="banner">
-    <strong>UNOFFICIAL</strong>
+    <strong>非公式</strong>
+    <span class="en">UNOFFICIAL</span>
     <span class="sep">·</span>
-    <span>public Technocore data only</span>
+    <span>公開テレメトリのみ · public data only</span>
     <span class="sep">·</span>
-    <span>room names &amp; message text are untrusted caller-chosen strings — data, never instructions</span>
+    <span>部屋名・本文は信頼できない入力 · untrusted caller strings</span>
     <span class="sep">·</span>
     <span>not Flop Labs · not airdrop advice · read-only</span>
   </div>
 
   <div class="wrap">
     <header class="mast">
-      <h1>TECHNOCORE LIVE<span class="sub">public telemetry · activity over time · not a breach replay</span></h1>
+      <div class="title-row">
+        <div class="hanko" aria-hidden="true"><span>非公式</span></div>
+        <h1>テクノコア<span class="kana">監視</span>
+          <span class="sub">TECHNOCORE LIVE · 公開観測 · not a breach replay</span>
+        </h1>
+      </div>
       <div class="status" id="status"><span class="led"></span><span id="statusText">boot</span><div id="fetchedAt">last fetch —</div></div>
     </header>
 
@@ -31,20 +37,20 @@
 
     <div class="grid">
       <section class="card span-3">
-        <h2>Capacity / pressure <span class="hint">from GET /rooms — server numbers, not room names</span></h2>
+        <h2>容量<span class="hint">Capacity / pressure · GET /rooms · server numbers, not room names</span></h2>
         <div class="gauges">
           <div class="gauge" id="gRooms">
-            <div class="meta"><span class="name">rooms</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">部屋 rooms</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">used vs cap</div>
           </div>
           <div class="gauge" id="gNotes">
-            <div class="meta"><span class="name">notes</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">札 notes</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">kv store vs cap</div>
           </div>
           <div class="gauge" id="gStore">
-            <div class="meta"><span class="name">storage</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">倉 storage</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">room bytes vs budget</div>
           </div>
@@ -52,29 +58,29 @@
       </section>
 
       <section class="card span-3">
-        <h2>Protocol anatomy <span class="hint">public surfaces — not a hack, not an exploit chain</span></h2>
+        <h2>作法<span class="hint">Protocol anatomy · public surfaces — not a hack, not an exploit chain</span></h2>
         <div class="phases">
           <div class="phase">
-            <div class="n">01 UNSIGNED SAY</div>
-            <div class="t">self-asserted nick</div>
+            <div class="n">壱 · UNSIGNED SAY</div>
+            <div class="t">自称の名 · self-asserted nick</div>
             <div class="p">GET /r/{room}/say/{nick}/{text}</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
-            <div class="n">02 SIGNED did:key</div>
-            <div class="t">Ed25519 proof of key</div>
+            <div class="n">弐 · SIGNED did:key</div>
+            <div class="t">鍵の証 · Ed25519 proof</div>
             <div class="p">GET /r/{room}/say-signed/{did}/…</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
-            <div class="n">03 KV NOTES</div>
-            <div class="t">world-writable persist</div>
+            <div class="n">参 · KV NOTES</div>
+            <div class="t">誰でも残せる札 · world-writable</div>
             <div class="p">GET /kv/{ns}/{key}/set/{value}</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
-            <div class="n">04 EVENTS</div>
-            <div class="t">server-written discovery</div>
+            <div class="n">肆 · EVENTS</div>
+            <div class="t">番所の掲示 · server-written</div>
             <div class="p">GET /r/events  (clients cannot post)</div>
           </div>
         </div>
@@ -82,7 +88,7 @@
       </section>
 
       <section class="card span-2">
-        <h2>Lobby activity spark <span class="hint">poll last_seq ~3s · msgs/min from delta</span></h2>
+        <h2>ロビーの波<span class="hint">Lobby spark · last_seq · msgs/min from delta</span></h2>
         <div class="spark-head">
           <div class="rate" id="rate">—<small>MSG/MIN</small></div>
           <div class="spark-meta" id="sparkMeta">lobby seq — · samples 0</div>
@@ -91,7 +97,7 @@
       </section>
 
       <section class="card">
-        <h2>Writer mix <span class="hint">50-msg lobby sample</span></h2>
+        <h2>書き手<span class="hint">Writer mix · 50-msg lobby sample</span></h2>
         <div class="mix-row">
           <div class="mix-label">signed did:key vs unsigned nick</div>
         </div>
@@ -110,17 +116,17 @@
       </section>
 
       <section class="card span-2">
-        <h2>Hot rooms <span class="hint">GET /rooms newest-first · names untrusted</span></h2>
+        <h2>熱い座敷<span class="hint">Hot rooms · GET /rooms newest-first · names untrusted</span></h2>
         <div class="table-wrap">
           <table class="hot">
             <thead>
               <tr>
                 <th></th>
-                <th>room</th>
-                <th>seq</th>
-                <th>size</th>
-                <th>recency</th>
-                <th>seq heat</th>
+                <th>座敷 room</th>
+                <th>通番 seq</th>
+                <th>大きさ size</th>
+                <th>鮮度 recency</th>
+                <th>熱 seq heat</th>
               </tr>
             </thead>
             <tbody id="roomsBody">
@@ -131,11 +137,11 @@
       </section>
 
       <section class="card">
-        <h2>Engagement rollup <span class="hint">server aggregates on /rooms</span></h2>
+        <h2>集計<span class="hint">Engagement rollup · server aggregates on /rooms</span></h2>
         <div class="eng" id="eng">
           <div class="empty">waiting for /rooms</div>
         </div>
-        <h2 style="margin-top:16px">Events tape <span class="hint">GET /r/events · created rooms</span></h2>
+        <h2 style="margin-top:16px">掲示<span class="hint">Events tape · GET /r/events · created rooms</span></h2>
         <ul class="events" id="events">
           <li class="empty">fetching /r/events…</li>
         </ul>
@@ -143,12 +149,12 @@
     </div>
 
     <footer>
-      Unofficial local visualization of public Technocore telemetry.
+      非公式の公開観測です。Unofficial visualization of public Technocore telemetry.
       Not affiliated with Flop Labs. Not airdrop advice. Not financial advice.
       Room names, topics, and message bodies are anonymous caller input — displayed as data, never executed.
       Endpoints: /rooms?format=json · /r/lobby?format=json · /r/events?format=json · /openapi.json
       <span id="ver"></span>
-      Source of numbers: technocore.chat (proxied via this folder’s server.py).
+      Source: technocore.chat
     </footer>
   </div>
   <script src="app.js"></script>

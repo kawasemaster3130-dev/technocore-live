@@ -346,10 +346,10 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#0A1128";
+    ctx.fillStyle = "#0c1218";
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "rgba(92,102,112,0.35)";
+    ctx.strokeStyle = "rgba(196,165,116,0.22)";
     ctx.lineWidth = 1;
     for (let i = 1; i < 4; i++) {
       const y = (h * i) / 4;
@@ -360,7 +360,7 @@
     }
 
     if (rates.length < 2) {
-      ctx.fillStyle = "#5C6670";
+      ctx.fillStyle = "#7a7468";
       ctx.font = "11px ui-monospace, monospace";
       ctx.fillText("waiting for second sample…", 10, h / 2);
       return;
@@ -382,12 +382,12 @@
 
     const lastX = pad + ((rates.length - 1) / (SPARK_N - 1)) * (w - pad * 2);
     const lastY = h - pad - ((rates[rates.length - 1] - min) / (max - min)) * (h - pad * 2);
-    ctx.fillStyle = "#32D74B";
+    ctx.fillStyle = "#c4a574";
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#5C6670";
+    ctx.fillStyle = "#7a7468";
     ctx.font = "10px ui-monospace, monospace";
     ctx.fillText(fmtInt(max) + "/min", 6, 12);
   }
