@@ -329,10 +329,10 @@
       const g = Math.round(75 + t * 140);
       const c = Math.round(180 * t);
       heat.style.background = "rgb(" + Math.round(4 + 20 * t) + "," + g + "," + (180 + Math.round(36 * t)) + ")";
-      if (idle <= 1) heat.style.background = "#32D74B";
-      else if (idle <= 8) heat.style.background = "#00B4D8";
-      else if (idle <= 20) heat.style.background = "#0466C8";
-      else heat.style.background = "#5C6670";
+      if (idle <= 1) heat.style.background = "#f0e6cc";
+      else if (idle <= 8) heat.style.background = "#d8c9a8";
+      else if (idle <= 20) heat.style.background = "#9a8b6a";
+      else heat.style.background = "#5c5648";
       heat.title = idle + "s idle";
       heatTd.appendChild(heat);
 
@@ -418,7 +418,7 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#0A1128";
+    ctx.fillStyle = "#10141c";
     ctx.fillRect(0, 0, w, h);
 
     ctx.strokeStyle = "rgba(196,165,116,0.22)";
@@ -448,13 +448,13 @@
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = "#00B4D8";
+    ctx.strokeStyle = "#e8c872";
     ctx.lineWidth = 1.6;
     ctx.stroke();
 
     const lastX = pad + ((rates.length - 1) / (SPARK_N - 1)) * (w - pad * 2);
     const lastY = h - pad - ((rates[rates.length - 1] - min) / (max - min)) * (h - pad * 2);
-    ctx.fillStyle = "#32D74B";
+    ctx.fillStyle = "#f3dd9a";
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
     ctx.fill();
