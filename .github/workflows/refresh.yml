@@ -1,0 +1,25 @@
+name: refresh snapshot
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch public telemetry
+        run: python3 scripts/refresh.py
+      - name: Commit snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot.json
+          git diff --cached --quiet && echo "no change" && exit 0
+          git commit -m "Refresh public Technocore snapshot"
+          git push

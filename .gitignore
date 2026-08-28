@@ -1,0 +1,5 @@
+shot-*.png
+shot-*.webp
+__pycache__/
+.DS_Store
+*.pyc
