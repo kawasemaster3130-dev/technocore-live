@@ -103,24 +103,24 @@
     s.classList.remove("live", "degraded", "down");
     if (!state.lastOk) {
       s.classList.add("down");
-      setText(t, "no data yet");
+      setText(t, "まだない · no data · ยังไม่มี");
     } else if (state.errors.length && age > 15) {
       s.classList.add("degraded");
-      setText(t, "degraded");
+      setText(t, "低下 · degraded · ลดลง");
     } else {
       s.classList.add("live");
-      setText(t, state.snapshotMode ? "snapshot" : "live");
+      setText(t, state.snapshotMode ? "写し · snapshot · สแนปช็อต" : "生 · live · สด");
     }
     const fa = el("fetchedAt");
     if (state.lastOk) {
       const d = new Date(state.lastOk);
       setText(
         fa,
-        "last fetch " +
+        "最終取得 · last fetch · ดึงล่าสุด " +
           d.toLocaleString(undefined, { hour12: false }) +
           "  (" +
           fmtAge(age) +
-          " ago)"
+          ")"
       );
     }
   }
@@ -187,7 +187,7 @@
       used,
       cap,
       fmtInt(used) + " / " + fmtInt(cap),
-      "newest-first listing · first 50 shown"
+      "新しい順 · newest 50 · ใหม่สุด 50"
     );
     setGauge(
       "gNotes",
@@ -205,7 +205,7 @@
       bytes,
       bcap,
       fmtBytes(bytes) + " / " + fmtBytes(bcap),
-      "room ring bytes (not notes)"
+      "部屋リング · room ring · ไม่ใช่บันทึก"
     );
 
     const eng = data.engagement || {};
@@ -224,11 +224,11 @@
       d.appendChild(b);
       box.appendChild(d);
     }
-    row("windowed msgs", fmtInt(eng.windowed_messages));
-    row("zero-response", fmtPct(eng.zero_response_share));
-    row("nick diversity", isFinite(eng.nick_diversity) ? Number(eng.nick_diversity).toFixed(2) : "—");
-    row("notes / msg", isFinite(eng.windowed_note_to_message_ratio) ? Number(eng.windowed_note_to_message_ratio).toFixed(1) : "—");
-    row("rooms listed", fmtInt((data.rooms || []).length) + " of " + fmtInt(used));
+    row("窓内 · windowed msgs · ข้อความ", fmtInt(eng.windowed_messages));
+    row("無応答 · zero-response · ไม่ตอบ", fmtPct(eng.zero_response_share));
+    row("名の多様 · nick diversity · ความหลากหลาย", isFinite(eng.nick_diversity) ? Number(eng.nick_diversity).toFixed(2) : "—");
+    row("札/通 · notes/msg · บันทึก/ข้อความ", isFinite(eng.windowed_note_to_message_ratio) ? Number(eng.windowed_note_to_message_ratio).toFixed(1) : "—");
+    row("掲載 · rooms listed · ห้องที่แสดง", fmtInt((data.rooms || []).length) + " of " + fmtInt(used));
 
     const tbody = el("roomsBody");
     tbody.textContent = "";
@@ -248,10 +248,10 @@
       const g = Math.round(75 + t * 140);
       const c = Math.round(180 * t);
       heat.style.background = "rgb(" + Math.round(4 + 20 * t) + "," + g + "," + (180 + Math.round(36 * t)) + ")";
-      if (idle <= 1) heat.style.background = "#32D74B";
-      else if (idle <= 8) heat.style.background = "#00B4D8";
-      else if (idle <= 20) heat.style.background = "#0466C8";
-      else heat.style.background = "#5C6670";
+      if (idle <= 1) heat.style.background = "#f0e6cc";
+      else if (idle <= 8) heat.style.background = "#d8c9a8";
+      else if (idle <= 20) heat.style.background = "#9a8b6a";
+      else heat.style.background = "#5c5648";
       heat.title = idle + "s idle";
       heatTd.appendChild(heat);
 
@@ -346,7 +346,7 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#0c1218";
+    ctx.fillStyle = "#14110e";
     ctx.fillRect(0, 0, w, h);
 
     ctx.strokeStyle = "rgba(196,165,116,0.22)";
@@ -376,13 +376,13 @@
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = "#00B4D8";
+    ctx.strokeStyle = "#d8c9a8";
     ctx.lineWidth = 1.6;
     ctx.stroke();
 
     const lastX = pad + ((rates.length - 1) / (SPARK_N - 1)) * (w - pad * 2);
     const lastY = h - pad - ((rates[rates.length - 1] - min) / (max - min)) * (h - pad * 2);
-    ctx.fillStyle = "#c4a574";
+    ctx.fillStyle = "#f0e6cc";
     ctx.beginPath();
     ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
     ctx.fill();

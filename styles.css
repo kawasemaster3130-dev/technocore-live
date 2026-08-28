@@ -1,16 +1,16 @@
 :root {
-  --bg: #0c1218;
-  --surface: #141c26;
-  --ink: #e8e0d2;
-  --mizu: #00B4D8;
-  --ai: #2a4a6e;
-  --shu: #c45c4a;
-  --kin: #c4a574;
-  --midori: #6aae7a;
-  --grey: #7a7468;
-  --line: rgba(196, 165, 116, 0.28);
+  --bg: #16130f;
+  --surface: #1e1a14;
+  --ink: #f3ead8;
+  --mizu: #d8c9a8;
+  --ai: #6e624c;
+  --shu: #d8c9a8;
+  --kin: #d8c9a8;
+  --midori: #c4b48c;
+  --grey: #8a8070;
+  --line: rgba(216, 201, 168, 0.32);
   --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --gothic: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --gothic: "Zen Kaku Gothic New", "Noto Sans Thai", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
@@ -19,9 +19,9 @@ html, body { margin: 0; padding: 0; }
 body {
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at top, rgba(42, 74, 110, 0.35), transparent 55%),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='42' viewBox='0 0 72 42'><g fill='none' stroke='%2300B4D8' stroke-width='1' opacity='0.13'><path d='M0 21c6 0 12-10 18-10S30 21 36 21 48 11 54 11 66 21 72 21'/><path d='M0 21c6 0 12 10 18 10S30 21 36 21 48 31 54 31 66 21 72 21'/><path d='M-36 21c6 0 12-10 18-10S-6 21 0 21'/></g></svg>"),
-    linear-gradient(180deg, #0c1218, #101820);
+    radial-gradient(ellipse at top, rgba(216, 201, 168, 0.08), transparent 55%),
+    url("asanoha.svg"),
+    linear-gradient(180deg, #1a1611, #14110e);
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--gothic);
@@ -31,7 +31,7 @@ body {
 }
 
 .banner {
-  background: rgba(12, 18, 24, 0.92);
+  background: rgba(22, 19, 15, 0.94);
   border-bottom: 1px solid var(--line);
   padding: 9px 22px;
   display: flex;
@@ -52,8 +52,9 @@ body {
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.18em;
-  color: var(--shu);
+  color: var(--kin);
 }
+.banner .th { font-family: "Noto Sans Thai", var(--gothic); color: var(--kin); }
 .banner .sep { color: var(--kin); opacity: 0.45; }
 
 .wrap { max-width: 1280px; margin: 0 auto; padding: 22px 18px 48px; }
@@ -179,6 +180,15 @@ h1 span.sub {
   font-weight: 700;
   text-transform: none;
 }
+.card h2 .tri {
+  display: block;
+  font-family: var(--gothic);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--grey);
+  font-weight: 400;
+  margin-top: 3px;
+}
 .card h2 .hint {
   font-family: var(--mono);
   color: var(--grey);
@@ -205,7 +215,7 @@ h1 span.sub {
 .gauge .pct { color: var(--mizu); }
 .track {
   height: 8px;
-  background: #0c1218;
+  background: #16130f;
   border: 1px solid rgba(196, 165, 116, 0.35);
   position: relative;
   overflow: hidden;
@@ -230,7 +240,7 @@ h1 span.sub {
   align-items: stretch;
 }
 .phase {
-  background: rgba(12, 18, 24, 0.65);
+  background: rgba(20, 17, 14, 0.7);
   border: 1px solid var(--line);
   padding: 12px 12px 14px;
   min-width: 0;
@@ -287,7 +297,7 @@ canvas#spark {
   width: 100%;
   height: 120px;
   display: block;
-  background: #0c1218;
+  background: #16130f;
   border: 1px solid var(--line);
 }
 
@@ -302,7 +312,7 @@ canvas#spark {
 .mix-num { font-family: var(--mono); font-size: 16px; color: var(--ink); }
 .stack {
   height: 10px;
-  background: #0c1218;
+  background: #16130f;
   border: 1px solid rgba(196, 165, 116, 0.35);
   display: flex;
   overflow: hidden;
@@ -322,7 +332,7 @@ canvas#spark {
   margin-top: 10px;
 }
 .kpi div {
-  background: rgba(12, 18, 24, 0.65);
+  background: rgba(20, 17, 14, 0.7);
   border: 1px solid var(--line);
   padding: 8px;
 }
@@ -376,7 +386,7 @@ td.heatcell { width: 8px; padding: 0 4px 0 0 !important; }
   background: var(--mizu);
   min-width: 1px;
 }
-.hbar-track { width: 72px; background: #0c1218; height: 4px; }
+.hbar-track { width: 72px; background: #16130f; height: 4px; }
 
 .events { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto; }
 .events li {

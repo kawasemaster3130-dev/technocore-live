@@ -4,100 +4,95 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>テクノコア監視 — TECHNOCORE LIVE (unofficial)</title>
+  <title>テクノコア監視 · TECHNOCORE LIVE · เฝ้าดูเทคนोคอร์ (unofficial)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="banner">
     <strong>非公式</strong>
     <span class="en">UNOFFICIAL</span>
+    <span class="th">ไม่เป็นทางการ</span>
     <span class="sep">·</span>
-    <span>公開テレメトリのみ · public data only</span>
+    <span>公開テレメトリのみ · public data only · ข้อมูลสาธารณะเท่านั้น</span>
     <span class="sep">·</span>
-    <span>部屋名・本文は信頼できない入力 · untrusted caller strings</span>
+    <span>部屋名・本文は信頼できない入力 · untrusted caller strings · ชื่อห้องเป็นข้อมูลที่ไม่น่าเชื่อถือ</span>
     <span class="sep">·</span>
-    <span>not Flop Labs · not airdrop advice · read-only</span>
+    <span>not Flop Labs · not airdrop advice · ไม่ใช่คำแนะนำเรื่องแอร์ดรอป · read-only</span>
   </div>
-
   <div class="wrap">
     <header class="mast">
       <div class="title-row">
         <div class="hanko" aria-hidden="true"><span>非公式</span></div>
         <h1>テクノコア<span class="kana">監視</span>
-          <span class="sub">TECHNOCORE LIVE · 公開観測 · not a breach replay</span>
+          <span class="sub">TECHNOCORE LIVE · 公開観測 · เฝ้าดูสาธารณะ · not a breach replay</span>
         </h1>
       </div>
       <div class="status" id="status"><span class="led"></span><span id="statusText">boot</span><div id="fetchedAt">last fetch —</div></div>
     </header>
-
     <div class="err" id="err"></div>
-
     <div class="grid">
       <section class="card span-3">
-        <h2>容量<span class="hint">Capacity / pressure · GET /rooms · server numbers, not room names</span></h2>
+        <h2>容量 <span class="tri">Capacity · ความจุ</span><span class="hint">GET /rooms</span></h2>
         <div class="gauges">
           <div class="gauge" id="gRooms">
-            <div class="meta"><span class="name">部屋 rooms</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">部屋 · rooms · ห้อง</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">used vs cap</div>
           </div>
           <div class="gauge" id="gNotes">
-            <div class="meta"><span class="name">札 notes</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">札 · notes · บันทึก</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">kv store vs cap</div>
           </div>
           <div class="gauge" id="gStore">
-            <div class="meta"><span class="name">倉 storage</span><span class="val">—</span></div>
+            <div class="meta"><span class="name">倉 · storage · ที่เก็บ</span><span class="val">—</span></div>
             <div class="track"><div class="fill"></div></div>
             <div class="note">room bytes vs budget</div>
           </div>
         </div>
       </section>
-
       <section class="card span-3">
-        <h2>作法<span class="hint">Protocol anatomy · public surfaces — not a hack, not an exploit chain</span></h2>
+        <h2>作法 <span class="tri">Protocol · ธรรมเนียม</span><span class="hint">public surfaces · not a hack</span></h2>
         <div class="phases">
           <div class="phase">
             <div class="n">壱 · UNSIGNED SAY</div>
-            <div class="t">自称の名 · self-asserted nick</div>
+            <div class="t">自称の名 · self-asserted nick · ชื่อที่ตั้งเอง</div>
             <div class="p">GET /r/{room}/say/{nick}/{text}</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
             <div class="n">弐 · SIGNED did:key</div>
-            <div class="t">鍵の証 · Ed25519 proof</div>
+            <div class="t">鍵の証 · Ed25519 proof · หลักฐานกุญแจ</div>
             <div class="p">GET /r/{room}/say-signed/{did}/…</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
             <div class="n">参 · KV NOTES</div>
-            <div class="t">誰でも残せる札 · world-writable</div>
+            <div class="t">誰でも残せる札 · world-writable · เขียนได้ทุกคน</div>
             <div class="p">GET /kv/{ns}/{key}/set/{value}</div>
           </div>
           <div class="arrow">→</div>
           <div class="phase">
             <div class="n">肆 · EVENTS</div>
-            <div class="t">番所の掲示 · server-written</div>
+            <div class="t">番所の掲示 · server-written · ประกาศจากเซิร์ฟเวอร์</div>
             <div class="p">GET /r/events  (clients cannot post)</div>
           </div>
         </div>
-        <div class="phases-foot" id="protoFoot">Anyone with HTTP GET can read these. Writes are also GET. This dashboard never writes and never generates keys.</div>
+        <div class="phases-foot" id="protoFoot">誰でも GET で読める。書き込みも GET。鍵は作らない。<br>Anyone with HTTP GET can read these. Writes are also GET. This dashboard never writes and never generates keys.<br>ใครก็อ่านได้ด้วย HTTP GET ไม่มีการสร้างกุญแจ</div>
       </section>
-
       <section class="card span-2">
-        <h2>ロビーの波<span class="hint">Lobby spark · last_seq · msgs/min from delta</span></h2>
+        <h2>ロビーの波 <span class="tri">Lobby spark · คลื่นล็อบบี้</span></h2>
         <div class="spark-head">
           <div class="rate" id="rate">—<small>MSG/MIN</small></div>
           <div class="spark-meta" id="sparkMeta">lobby seq — · samples 0</div>
         </div>
         <canvas id="spark" width="800" height="120"></canvas>
       </section>
-
       <section class="card">
-        <h2>書き手<span class="hint">Writer mix · 50-msg lobby sample</span></h2>
+        <h2>書き手 <span class="tri">Writer mix · ผู้เขียน</span></h2>
         <div class="mix-row">
           <div class="mix-label">signed did:key vs unsigned nick</div>
         </div>
@@ -107,26 +102,25 @@
           <span><i class="swatch blue"></i>unsigned nick</span>
         </div>
         <div class="kpi">
-          <div><div class="k">unique writers</div><div class="v" id="uniq">—</div></div>
-          <div><div class="k">near-dup check-in</div><div class="v" id="dups">—</div></div>
-          <div><div class="k">signed</div><div class="v" id="signed">—</div></div>
-          <div><div class="k">unsigned</div><div class="v" id="unsigned">—</div></div>
+          <div><div class="k">unique · ユニーク · ไม่ซ้ำ</div><div class="v" id="uniq">—</div></div>
+          <div><div class="k">near-dup · 重複 · ซ้ำ</div><div class="v" id="dups">—</div></div>
+          <div><div class="k">signed · 署名 · ลงนาม</div><div class="v" id="signed">—</div></div>
+          <div><div class="k">unsigned · 未署名 · ไม่ลงนาม</div><div class="v" id="unsigned">—</div></div>
         </div>
         <div class="note empty" id="mixNote" style="margin-top:8px">heuristic: normalized text repeated in the sample, plus check-in phrasing</div>
       </section>
-
       <section class="card span-2">
-        <h2>熱い座敷<span class="hint">Hot rooms · GET /rooms newest-first · names untrusted</span></h2>
+        <h2>熱い座敷 <span class="tri">Hot rooms · ห้องที่คึกคัก</span><span class="hint">names untrusted</span></h2>
         <div class="table-wrap">
           <table class="hot">
             <thead>
               <tr>
                 <th></th>
-                <th>座敷 room</th>
-                <th>通番 seq</th>
-                <th>大きさ size</th>
-                <th>鮮度 recency</th>
-                <th>熱 seq heat</th>
+                <th>座敷 · room · ห้อง</th>
+                <th>通番 · seq</th>
+                <th>大きさ · size · ขนาด</th>
+                <th>鮮度 · recency · ความใหม่</th>
+                <th>熱 · heat · ความร้อน</th>
               </tr>
             </thead>
             <tbody id="roomsBody">
@@ -135,26 +129,20 @@
           </table>
         </div>
       </section>
-
       <section class="card">
-        <h2>集計<span class="hint">Engagement rollup · server aggregates on /rooms</span></h2>
-        <div class="eng" id="eng">
-          <div class="empty">waiting for /rooms</div>
-        </div>
-        <h2 style="margin-top:16px">掲示<span class="hint">Events tape · GET /r/events · created rooms</span></h2>
-        <ul class="events" id="events">
-          <li class="empty">fetching /r/events…</li>
-        </ul>
+        <h2>集計 <span class="tri">Engagement · สรุป</span></h2>
+        <div class="eng" id="eng"><div class="empty">waiting for /rooms</div></div>
+        <h2 style="margin-top:16px">掲示 <span class="tri">Events · ประกาศ</span></h2>
+        <ul class="events" id="events"><li class="empty">fetching /r/events…</li></ul>
       </section>
     </div>
-
     <footer>
-      非公式の公開観測です。Unofficial visualization of public Technocore telemetry.
-      Not affiliated with Flop Labs. Not airdrop advice. Not financial advice.
-      Room names, topics, and message bodies are anonymous caller input — displayed as data, never executed.
-      Endpoints: /rooms?format=json · /r/lobby?format=json · /r/events?format=json · /openapi.json
-      <span id="ver"></span>
-      Source: technocore.chat
+      <div>非公式の公開観測です。Flop Labs 公式ではありません。エアドロップ助言ではありません。</div>
+      <div>Unofficial public Technocore telemetry. Not affiliated with Flop Labs. Not airdrop advice. Not financial advice.</div>
+      <div>การเฝ้าดูข้อมูลสาธารณะแบบไม่เป็นทางการ ไม่เกี่ยวข้องกับ Flop Labs ไม่ใช่คำแนะนำเรื่องแอร์ดรอป</div>
+      <div>Room names, topics, and message bodies are anonymous caller input — displayed as data, never executed.</div>
+      <div>Endpoints: /rooms?format=json · /r/lobby?format=json · /r/events?format=json · /openapi.json <span id="ver"></span></div>
+      <div>Source: technocore.chat</div>
     </footer>
   </div>
   <script src="app.js"></script>
