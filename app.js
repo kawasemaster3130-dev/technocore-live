@@ -525,85 +525,102 @@
     ctx.restore();
   }
 
-  function drawLineFace(ctx, cx, cy, rad, mood) {
-    const k = mood.kind;
+  function findLatestLargeValley(rates) {
+    const n = rates.length;
+    if (n < 8) return null;
+    const maxR = Math.max.apply(null, rates);
+    const minR = Math.min.apply(null, rates);
+    const span = Math.max(1, maxR - minR);
+    let latest = null;
+    for (let i = 3; i < n - 2; i++) {
+      if (rates[i] > rates[i - 1] || rates[i] > rates[i + 1]) continue;
+      if (!(rates[i] < rates[i - 2] && rates[i] < rates[i + 2])) continue;
+      let L = i;
+      while (L > 1 && rates[L - 1] >= rates[L]) L--;
+      let R = i;
+      while (R < n - 2 && rates[R + 1] >= rates[R]) R++;
+      const peak = Math.min(rates[L], rates[R]);
+      const depth = peak - rates[i];
+      const width = R - L;
+      if (width < 5) continue;
+      if (depth < span * 0.16) continue;
+      latest = { i: i, L: L, R: R, depth: depth, width: width };
+    }
+    return latest;
+  }
+
+  function drawDoodleFace(ctx, cx, cy, rw, rh, kind) {
+    rw = Math.max(18, rw);
+    rh = Math.max(16, rh);
     ctx.save();
     ctx.translate(cx, cy);
     ctx.strokeStyle = "#f3dd9a";
-    ctx.fillStyle = "#1a2230";
-    ctx.lineWidth = 2.4;
+    ctx.fillStyle = "rgba(16,20,28,0.35)";
+    ctx.lineWidth = 2.6;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.shadowColor = "rgba(232,200,114,0.55)";
-    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(232,200,114,0.45)";
+    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, rw, rh, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = "#e8c872";
-    ctx.fillStyle = "#e8c872";
-    ctx.lineWidth = 2.1;
-    const eyeY = -rad * 0.18;
-    const eyeD = rad * 0.32;
-    function oneEye(ex, wink) {
-      if (wink || k === 4) {
-        ctx.beginPath();
-        ctx.moveTo(ex - rad * 0.14, eyeY);
-        ctx.lineTo(ex + rad * 0.14, eyeY + (k === 3 ? -rad * 0.04 : rad * 0.02));
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.arc(ex, eyeY, rad * 0.09, 0, Math.PI * 2);
-        ctx.fill();
-        if (k === 3) {
-          ctx.beginPath();
-          ctx.moveTo(ex - rad * 0.18, eyeY - rad * 0.22);
-          ctx.lineTo(ex + rad * 0.1, eyeY - rad * 0.08);
-          ctx.stroke();
-        }
-      }
-    }
-    oneEye(-eyeD, false);
-    oneEye(eyeD, k === 6);
     ctx.beginPath();
-    const my = rad * 0.32;
-    if (k === 2) {
-      ctx.ellipse(0, my, rad * 0.2 * (0.7 + mood.open), rad * 0.24 * (0.7 + mood.open), 0, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (k === 3) {
-      ctx.moveTo(-rad * 0.38, my + rad * 0.1);
-      ctx.quadraticCurveTo(0, my - rad * 0.18, rad * 0.38, my + rad * 0.1);
-      ctx.stroke();
-    } else if (k === 4) {
-      ctx.moveTo(-rad * 0.22, my);
-      ctx.lineTo(rad * 0.22, my);
-      ctx.stroke();
-    } else if (k === 5) {
-      ctx.moveTo(-rad * 0.34, my);
-      ctx.quadraticCurveTo(0, my + rad * 0.42, rad * 0.34, my);
-      ctx.stroke();
-      ctx.fillStyle = "#c45a4a";
+    ctx.moveTo(-rw * 0.15, -rh * 0.96);
+    ctx.quadraticCurveTo(-rw * 0.05, -rh * 1.28, rw * 0.12, -rh * 0.9);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(rw * 0.82, -rh * 0.05, rw * 0.16, rh * 0.22, 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    const k = kind % 8;
+    const eyeY = -rh * 0.12;
+    const eyeD = rw * 0.32;
+    ctx.lineWidth = 2.4;
+    function slantEye(ex, flip) {
+      const s = flip ? -1 : 1;
+      const drop = (k === 3) ? rh * 0.08 : (k === 4 ? 0 : rh * 0.02);
       ctx.beginPath();
-      ctx.ellipse(rad * 0.1, my + rad * 0.3, rad * 0.1, rad * 0.16, 0.25, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (k === 7) {
-      ctx.moveTo(-rad * 0.4, my);
-      ctx.lineTo(rad * 0.4, my);
+      ctx.moveTo(ex - rw * 0.16, eyeY - rh * 0.08 * s + drop);
+      ctx.lineTo(ex + rw * 0.16, eyeY + rh * 0.1 * s);
       ctx.stroke();
       ctx.beginPath();
-      for (let i = -2; i <= 2; i++) {
-        ctx.moveTo(i * rad * 0.12, my);
-        ctx.lineTo(i * rad * 0.12, my + rad * 0.16);
-      }
+      ctx.moveTo(ex - rw * 0.14, eyeY + rh * 0.04);
+      ctx.lineTo(ex + rw * 0.12, eyeY + rh * 0.06);
       ctx.stroke();
-    } else if (k === 1) {
-      ctx.moveTo(-rad * 0.08, my + rad * 0.02);
-      ctx.quadraticCurveTo(rad * 0.22, my + rad * 0.28, rad * 0.42, my - rad * 0.02);
+    }
+    if (k === 6) {
+      slantEye(-eyeD, false);
+      ctx.beginPath();
+      ctx.moveTo(eyeD - rw * 0.14, eyeY);
+      ctx.lineTo(eyeD + rw * 0.14, eyeY + rh * 0.04);
       ctx.stroke();
     } else {
-      ctx.moveTo(-rad * 0.4, my - rad * 0.06);
-      ctx.quadraticCurveTo(0, my + rad * 0.5 * mood.open, rad * 0.4, my - rad * 0.06);
+      slantEye(-eyeD, false);
+      slantEye(eyeD, true);
+    }
+    ctx.lineWidth = 2.5;
+    const my = rh * 0.28;
+    ctx.beginPath();
+    if (k === 3) {
+      ctx.moveTo(-rw * 0.42, my + rh * 0.12);
+      ctx.quadraticCurveTo(0, my - rh * 0.2, rw * 0.42, my + rh * 0.12);
+      ctx.stroke();
+    } else if (k === 4) {
+      ctx.moveTo(-rw * 0.28, my);
+      ctx.lineTo(rw * 0.28, my);
+      ctx.stroke();
+    } else {
+      ctx.moveTo(-rw * 0.5, my - rh * 0.04);
+      ctx.quadraticCurveTo(0, my + rh * 0.55, rw * 0.5, my - rh * 0.04);
+      ctx.stroke();
+      ctx.beginPath();
+      const teeth = 5;
+      for (let t = 0; t < teeth; t++) {
+        const tx = -rw * 0.28 + (t * (rw * 0.56) / (teeth - 1));
+        ctx.moveTo(tx, my + rh * 0.02);
+        ctx.lineTo(tx, my + rh * 0.22);
+      }
       ctx.stroke();
     }
     ctx.restore();
@@ -696,13 +713,9 @@
       }
     } else {
       const n = rates.length;
-      const lastP = xyFor(rates, n - 1, w, h, pad, min, max);
-      const rad = 20;
-      const vRad = 15;
       ctx.beginPath();
       for (let i = 0; i < n; i++) {
         const p = xyFor(rates, i, w, h, pad, min, max);
-        if (i === n - 1) p.x = lastP.x - rad - 2;
         if (i === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       }
@@ -711,25 +724,19 @@
       ctx.lineJoin = "round";
       ctx.stroke();
 
-      const span = Math.max(1, max - min);
-      const thresh = span * 0.05;
-      let lastValley = -99;
-      for (let i = 1; i < n - 2; i++) {
-        if (!(rates[i] <= rates[i - 1] && rates[i] < rates[i + 1])) continue;
-        const depth = Math.min(rates[i - 1], rates[i + 1]) - rates[i];
-        if (depth < thresh) continue;
-        if (i - lastValley < 5) continue;
-        lastValley = i;
-        const p = xyFor(rates, i, w, h, pad, min, max);
-        const slice = rates.slice(0, i + 1);
-        const mood = waveMood(slice, seed + i * 17);
-        const fy = Math.min(h - vRad - 4, Math.max(vRad + 4, p.y));
-        drawLineFace(ctx, p.x, fy, vRad, mood);
+      const valley = findLatestLargeValley(rates);
+      if (valley) {
+        const pL = xyFor(rates, valley.L, w, h, pad, min, max);
+        const pI = xyFor(rates, valley.i, w, h, pad, min, max);
+        const pR = xyFor(rates, valley.R, w, h, pad, min, max);
+        const cx = (pL.x + pR.x) / 2;
+        const topY = Math.min(pL.y, pR.y);
+        const cy = (topY + pI.y) / 2;
+        const rw = Math.max(16, Math.abs(pR.x - pL.x) * 0.32);
+        const rh = Math.max(14, Math.abs(pI.y - topY) * 0.42);
+        const kind = (valley.i + (state.lastSeq || 0)) % 8;
+        drawDoodleFace(ctx, cx, cy, rw, rh, kind);
       }
-
-      const leadMood = waveMood(rates, seed);
-      const faceY = Math.min(h - rad - 4, Math.max(rad + 4, lastP.y));
-      drawLineFace(ctx, lastP.x, faceY, rad, leadMood);
     }
 
     ctx.fillStyle = "#7a7468";
