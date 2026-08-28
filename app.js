@@ -698,12 +698,11 @@
       const n = rates.length;
       const lastP = xyFor(rates, n - 1, w, h, pad, min, max);
       const rad = 20;
+      const vRad = 15;
       ctx.beginPath();
       for (let i = 0; i < n; i++) {
         const p = xyFor(rates, i, w, h, pad, min, max);
-        if (i === n - 1) {
-          p.x = lastP.x - rad - 2;
-        }
+        if (i === n - 1) p.x = lastP.x - rad - 2;
         if (i === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       }
@@ -711,9 +710,26 @@
       ctx.lineWidth = 2.2;
       ctx.lineJoin = "round";
       ctx.stroke();
-      const mood = waveMood(rates, seed);
+
+      const span = Math.max(1, max - min);
+      const thresh = span * 0.05;
+      let lastValley = -99;
+      for (let i = 1; i < n - 2; i++) {
+        if (!(rates[i] <= rates[i - 1] && rates[i] < rates[i + 1])) continue;
+        const depth = Math.min(rates[i - 1], rates[i + 1]) - rates[i];
+        if (depth < thresh) continue;
+        if (i - lastValley < 5) continue;
+        lastValley = i;
+        const p = xyFor(rates, i, w, h, pad, min, max);
+        const slice = rates.slice(0, i + 1);
+        const mood = waveMood(slice, seed + i * 17);
+        const fy = Math.min(h - vRad - 4, Math.max(vRad + 4, p.y));
+        drawLineFace(ctx, p.x, fy, vRad, mood);
+      }
+
+      const leadMood = waveMood(rates, seed);
       const faceY = Math.min(h - rad - 4, Math.max(rad + 4, lastP.y));
-      drawLineFace(ctx, lastP.x, faceY, rad, mood);
+      drawLineFace(ctx, lastP.x, faceY, rad, leadMood);
     }
 
     ctx.fillStyle = "#7a7468";
