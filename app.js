@@ -528,13 +528,9 @@
   function findLatestLargeValley(rates) {
     const n = rates.length;
     if (n < 8) return null;
-    const maxR = Math.max.apply(null, rates);
-    const minR = Math.min.apply(null, rates);
-    const span = Math.max(1, maxR - minR);
-    let latest = null;
+    const found = [];
     for (let i = 3; i < n - 2; i++) {
       if (rates[i] > rates[i - 1] || rates[i] > rates[i + 1]) continue;
-      if (!(rates[i] < rates[i - 2] && rates[i] < rates[i + 2])) continue;
       let L = i;
       while (L > 1 && rates[L - 1] >= rates[L]) L--;
       let R = i;
@@ -542,9 +538,17 @@
       const peak = Math.min(rates[L], rates[R]);
       const depth = peak - rates[i];
       const width = R - L;
-      if (width < 5) continue;
-      if (depth < span * 0.16) continue;
-      latest = { i: i, L: L, R: R, depth: depth, width: width };
+      if (width < 4 || depth <= 0) continue;
+      found.push({ i: i, L: L, R: R, depth: depth, width: width });
+    }
+    if (!found.length) return null;
+    let maxD = 0;
+    for (let v = 0; v < found.length; v++) {
+      if (found[v].depth > maxD) maxD = found[v].depth;
+    }
+    let latest = null;
+    for (let v = 0; v < found.length; v++) {
+      if (found[v].depth >= maxD * 0.45) latest = found[v];
     }
     return latest;
   }
@@ -732,8 +736,8 @@
         const cx = (pL.x + pR.x) / 2;
         const topY = Math.min(pL.y, pR.y);
         const cy = (topY + pI.y) / 2;
-        const rw = Math.max(16, Math.abs(pR.x - pL.x) * 0.32);
-        const rh = Math.max(14, Math.abs(pI.y - topY) * 0.42);
+        const rw = Math.max(18, Math.abs(pR.x - pL.x) * 0.42);
+        const rh = Math.max(16, Math.abs(pI.y - topY) * 0.52);
         const kind = (valley.i + (state.lastSeq || 0)) % 8;
         drawDoodleFace(ctx, cx, cy, rw, rh, kind);
       }
