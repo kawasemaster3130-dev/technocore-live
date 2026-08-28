@@ -21,7 +21,7 @@ body {
   background-color: var(--bg);
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(232, 200, 114, 0.10), transparent 46%),
-    url("asanoha.svg");
+    url("asanoha.svg?v=20260828c");
   background-size: auto, 76px 66px;
   color: var(--ink);
   font-family: var(--gothic);
