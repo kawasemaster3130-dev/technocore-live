@@ -2,12 +2,12 @@
 (function () {
   "use strict";
 
-  const POLL_SEQ_MS = 1000;
+  const POLL_SEQ_MS = 500;
   const POLL_ROOMS_MS = 20000;
   const POLL_SAMPLE_MS = 32000;
   const POLL_EVENTS_MS = 45000;
   const SPARK_N = 50;
-  const FETCH_MS = 18000;
+  const FETCH_MS = 5000;
 
   const CHECKIN_RE =
     /\b(check\s*in|standing by|heartbeat|signed presence|alive and well|did active|node (synced|online)|lobby active|agent check|participation (logged|confirmed)|decentralized identity|watching the agentic|flop (ready|network|infrastructure)|autonomous participation|ping ensuring)\b/;
@@ -112,6 +112,8 @@
       return "face";
     })(),
     playHead: 0,
+    lead: null,
+    leadRaf: false,
   };
 
   function isLocalHost() {
@@ -630,6 +632,68 @@
     ctx.restore();
   }
 
+  function drawLeadFace(ctx, cx, cy, rad, seed) {
+    const k = Math.abs(seed | 0) % 8;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.shadowColor = "rgba(243,221,154,0.9)";
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = "#1a2230";
+    ctx.strokeStyle = "#f3dd9a";
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#e8c872";
+    ctx.fillStyle = "#e8c872";
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = "round";
+    const eyeY = -rad * 0.18;
+    const eyeD = rad * 0.32;
+    ctx.beginPath();
+    ctx.arc(-eyeD, eyeY, rad * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    if (k === 6) {
+      ctx.beginPath();
+      ctx.moveTo(eyeD - rad * 0.14, eyeY);
+      ctx.lineTo(eyeD + rad * 0.14, eyeY + rad * 0.04);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(eyeD, eyeY, rad * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(-rad * 0.42, rad * 0.22);
+    ctx.quadraticCurveTo(0, rad * 0.62, rad * 0.42, rad * 0.22);
+    ctx.stroke();
+    ctx.fillStyle = "#c45a4a";
+    ctx.beginPath();
+    ctx.ellipse(rad * 0.12, rad * 0.48, rad * 0.11, rad * 0.16, 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  const flopFace = new Image();
+  flopFace.src = "flop-face.png";
+  flopFace.onload = function () { paintSpark(); };
+
+  function drawLeadChip(ctx, cx, cy, rad, seed) {
+    if (!flopFace.complete || !flopFace.naturalWidth) {
+      drawLeadFace(ctx, cx, cy, rad, seed);
+      return;
+    }
+    const s = rad * 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.shadowColor = "rgba(0,180,216,0.4)";
+    ctx.shadowBlur = 6;
+    ctx.drawImage(flopFace, -s / 2, -s / 2, s, s);
+    ctx.restore();
+  }
+
   function paintSpark() {
     const allRates = state.samples.map(function (s) {
       return s.rate;
@@ -717,30 +781,20 @@
       }
     } else {
       const n = rates.length;
+      const lastP = xyFor(rates, n - 1, w, h, pad, min, max);
+      const rad = 18;
+      ctx.strokeStyle = "#e8c872";
+      ctx.lineWidth = 2.6;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
       ctx.beginPath();
       for (let i = 0; i < n; i++) {
         const p = xyFor(rates, i, w, h, pad, min, max);
         if (i === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       }
-      ctx.strokeStyle = "#e8c872";
-      ctx.lineWidth = 2.2;
-      ctx.lineJoin = "round";
       ctx.stroke();
-
-      const valley = findLatestLargeValley(rates);
-      if (valley) {
-        const pL = xyFor(rates, valley.L, w, h, pad, min, max);
-        const pI = xyFor(rates, valley.i, w, h, pad, min, max);
-        const pR = xyFor(rates, valley.R, w, h, pad, min, max);
-        const cx = (pL.x + pR.x) / 2;
-        const topY = Math.min(pL.y, pR.y);
-        const cy = (topY + pI.y) / 2;
-        const rw = Math.max(18, Math.abs(pR.x - pL.x) * 0.42);
-        const rh = Math.max(16, Math.abs(pI.y - topY) * 0.52);
-        const kind = (valley.i + (state.lastSeq || 0)) % 8;
-        drawDoodleFace(ctx, cx, cy, rw, rh, kind);
-      }
+      drawLeadChip(ctx, lastP.x, lastP.y, rad, seed);
     }
 
     ctx.fillStyle = "#7a7468";
@@ -863,6 +917,10 @@
   }
 
   /* ---- polls ---- */
+  function isTransient(msg) {
+    return /HTTP 503|HTTP 429|timeout/i.test(String(msg || ""));
+  }
+
   async function pollRooms() {
     try {
       const data = await getJSON("/rooms?format=json");
@@ -870,21 +928,32 @@
       paintRooms(data);
       markOk();
     } catch (e) {
-      showError(String(e && e.message ? e.message : e));
+      const msg = String(e && e.message ? e.message : e);
+      if (!isTransient(msg)) showError(msg);
     }
   }
 
   async function pollSeq() {
+    if (state.seqBusy) return;
+    if (state.seqBackoff && Date.now() < state.seqBackoff) return;
+    state.seqBusy = true;
     try {
       const data = await getJSON("/r/lobby?format=json&limit=1");
       if (data && data._notJson) throw new Error("/r/lobby: not json");
       const seq = data.last_seq != null ? data.last_seq : (data.messages && data.messages.length ? data.messages[data.messages.length - 1].seq : null);
       if (seq == null) throw new Error("/r/lobby: no last_seq");
       pushSeq(seq);
-      state.lastOk = Date.now();
-      paintStatus();
+      state.seqBackoff = 0;
+      markOk();
     } catch (e) {
-      showError(String(e && e.message ? e.message : e));
+      const msg = String(e && e.message ? e.message : e);
+      if (isTransient(msg)) {
+        state.seqBackoff = Date.now() + 2000;
+      } else {
+        showError(msg);
+      }
+    } finally {
+      state.seqBusy = false;
     }
   }
 
@@ -900,7 +969,8 @@
       state.lastOk = Date.now();
       paintStatus();
     } catch (e) {
-      showError(String(e && e.message ? e.message : e));
+      const msg = String(e && e.message ? e.message : e);
+      if (!isTransient(msg)) showError(msg);
     }
   }
 
@@ -914,7 +984,8 @@
       state.lastOk = Date.now();
       paintStatus();
     } catch (e) {
-      showError(String(e && e.message ? e.message : e));
+      const msg = String(e && e.message ? e.message : e);
+      if (!isTransient(msg)) showError(msg);
     }
   }
 
@@ -932,7 +1003,8 @@
           (info.version || "")
       );
     } catch (e) {
-      showError(String(e && e.message ? e.message : e));
+      const msg = String(e && e.message ? e.message : e);
+      if (!isTransient(msg)) showError(msg);
     }
   }
 
